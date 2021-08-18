@@ -1,6 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:quizzler_flutter/question.dart';
+import 'package:quizzler_flutter/quizz_brain.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+
+QuizBrain quizBrain = QuizBrain();
 
 void main() => runApp(Quizzler());
 
@@ -32,23 +35,6 @@ class QuizPage extends StatefulWidget {
 class _QuizPageState extends State<QuizPage> {
   final List<Widget> scoreKeeper = [];
 
-  final List<Question> questions = [
-    Question(
-      q: 'You can lead a cow down stairs but not up stairs.',
-      a: false,
-    ),
-    Question(
-      q: 'Approximately one quarter of human bones are in the feet.',
-      a: true,
-    ),
-    Question(
-      q: 'A slug\'s blood is green.',
-      a: true,
-    ),
-  ];
-
-  int questionNumber = 0;
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -61,7 +47,7 @@ class _QuizPageState extends State<QuizPage> {
             padding: EdgeInsets.all(10),
             child: Center(
               child: Text(
-                questions[questionNumber].questionText,
+                quizBrain.getQuestionText(),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 25,
@@ -85,15 +71,7 @@ class _QuizPageState extends State<QuizPage> {
                 ),
               ),
               onPressed: () {
-                bool correctAnswer = questions[questionNumber].questionAnswer;
-                if (correctAnswer == true) {
-                  print('You\'re right');
-                } else {
-                  print('You\'re wrong');
-                }
-                setState(() {
-                  questionNumber++;
-                });
+                checkAnswer(true);
               },
             ),
           ),
@@ -112,15 +90,7 @@ class _QuizPageState extends State<QuizPage> {
                 ),
               ),
               onPressed: () {
-                bool correctAnswer = questions[questionNumber].questionAnswer;
-                if (correctAnswer == false) {
-                  print('You\'re right');
-                } else {
-                  print('You\'re wrong');
-                }
-                setState(() {
-                  questionNumber++;
-                });
+                checkAnswer(false);
               },
             ),
           ),
@@ -130,5 +100,32 @@ class _QuizPageState extends State<QuizPage> {
         ),
       ],
     );
+  }
+
+  void checkAnswer(bool userPickAnswer) {
+    bool correctAnswer = quizBrain.getQuestionAnswer();
+
+    setState(() {
+      if (quizBrain.isFinished()) {
+        Alert(context: context, title: "Quizzer", desc: "End of the quiz.")
+            .show();
+        scoreKeeper.clear();
+        quizBrain.reset();
+      } else {
+        if (correctAnswer == userPickAnswer) {
+          scoreKeeper.add(Icon(
+            Icons.check,
+            color: Colors.green,
+          ));
+        } else {
+          scoreKeeper.add(Icon(
+            Icons.close,
+            color: Colors.red,
+          ));
+        }
+
+        quizBrain.nextQuestion();
+      }
+    });
   }
 }
